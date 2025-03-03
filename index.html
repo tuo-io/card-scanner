@@ -103,7 +103,17 @@
             overlayContext.strokeRect(rectX, rectY, rectWidth, rectHeight);
         });
 
-        captureButton.addEventListener('click', () => {
+        // Add touch event listeners for the capture button
+        captureButton.addEventListener('click', captureImage);
+        captureButton.addEventListener('touchstart', captureImage);
+
+        // Add touch event listeners for the switch camera button
+        document.getElementById('switch-camera').addEventListener('click', switchCamera);
+        document.getElementById('switch-camera').addEventListener('touchstart', switchCamera);
+
+        function captureImage(event) {
+            event.preventDefault(); // Prevent default behavior for touch events
+
             canvas.width = rectWidth;
             canvas.height = rectHeight;
 
@@ -128,7 +138,14 @@
                 .then(({ data: { text } }) => {
                     output.innerText = text;
                 });
-        });
+        }
+
+        function switchCamera(event) {
+            event.preventDefault(); // Prevent default behavior for touch events
+
+            useFrontCamera = !useFrontCamera;
+            startCamera();
+        }
 
         copyButton.addEventListener('click', () => {
             navigator.clipboard.writeText(base64String).then(() => {
