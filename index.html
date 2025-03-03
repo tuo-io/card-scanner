@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Card Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto py-10">
+        <h2 class="text-3xl font-bold mb-6 text-center">ID Card Scanner</h2>
+        
+        <div id="video-container" class="flex justify-center mb-4 relative">
+            <video id="video" class="border-2 border-gray-400 rounded-lg shadow-lg" autoplay></video>
+            <canvas id="canvas-overlay" class="absolute top-0 z-10"></canvas>
+        </div>
+        
+        <div class="flex justify-center mb-6">
+            <button id="capture" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                Capture
+            </button>
+        </div>
+
+        <canvas id="canvas" class="hidden"></canvas>
+
+        <div id="preview-container" class="bg-white rounded-lg shadow-md p-4 mb-4 text-center">
+            <h3 class="text-xl font-semibold mb-2">Captured Image Preview:</h3>
+            <img id="preview" class="inline-block max-w-full rounded-lg shadow-md" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII" alt="Captured Image">
+        </div>
+
+        <div id="output" class="bg-white rounded-lg shadow-md p-4 mb-4">
+            <h3 class="text-xl font-semibold mb-2">Recognized Text:</h3>
+            <p class="text-sm text-gray-700"></p>
+        </div>
+
+        <div id="base64-output" class="bg-white rounded-lg shadow-md p-4 mb-4 overflow-x-auto">
+            <h3 class="text-xl font-semibold mb-2">Base64 Output (Plain Text):</h3>
+            <div class="flex justify-center mb-2">
+                <button id="copy" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg shadow-md transition duration-300 hidden">
+                    Copy Base64
+                </button>
+            </div>
+            <p class="text-xs font-mono text-gray-600 break-words"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvasOverlay = document.getElementById('canvas-overlay');
+        const canvas = document.getElementById('canvas');
+        const preview = document.getElementById('preview');
+        const output = document.getElementById('output').querySelector('p');
+        const captureButton = document.getElementById('capture');
+        const base64Output = document.getElementById('base64-output').querySelector('p');
+        const copyButton = document.getElementById('copy');
+        const overlayContext = canvasOverlay.getContext('2d');
+        const context = canvas.getContext('2d');
+
+        let base64String = '';
+        let rectX, rectY, rectWidth, rectHeight;
+
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            video.srcObject = stream;
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            canvasOverlay.width = video.videoWidth;
+            canvasOverlay.height = video.videoHeight;
+
+            const cr80AspectRatio = 3.375 / 2.125;
+
+            rectHeight = video.videoHeight * 0.5; // Adjust the size to 50% of the video height
+            rectWidth = rectHeight * cr80AspectRatio;
+
+            rectX = (video.videoWidth - rectWidth) / 2;
+            rectY = (video.videoHeight - rectHeight) / 2;
+
+            overlayContext.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
+            overlayContext.lineWidth = 5;
+            overlayContext.strokeStyle = 'green';
+            overlayContext.strokeRect(rectX, rectY, rectWidth, rectHeight);
+        });
+
+        captureButton.addEventListener('click', () => {
+            canvas.width = rectWidth;
+            canvas.height = rectHeight;
+
+            // Crop the video to the green rectangle area
+            context.drawImage(video, rectX, rectY, rectWidth, rectHeight, 0, 0, rectWidth, rectHeight);
+
+            // Convert to Base64 and remove Data URI prefix
+            const imageData = canvas.toDataURL('image/png');
+            base64String = imageData.replace(/^data:image\/png;base64,/, '');
+            base64Output.innerText = base64String;
+
+            // Set the image preview
+            preview.src = imageData;
+
+            // Show the copy button if base64String is not empty
+            if (base64String) {
+                copyButton.classList.remove('hidden');
+            }
+
+            // Perform OCR on the cropped image
+            Tesseract.recognize(imageData, 'eng', { logger: m => console.log(m) })
+                .then(({ data: { text } }) => {
+                    output.innerText = text;
+                });
+        });
+
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(base64String).then(() => {
+                alert('Base64 string copied to clipboard!');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        });
+    </script>
+</body>
+</html>
