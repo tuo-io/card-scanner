@@ -19,6 +19,9 @@
             <button id="capture" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
                 Capture
             </button>
+            <button id="switch-camera" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ml-4">
+                Switch Camera
+            </button>
         </div>
 
         <canvas id="canvas" class="hidden"></canvas>
@@ -59,9 +62,27 @@
 
         let base64String = '';
         let rectX, rectY, rectWidth, rectHeight;
+        let useFrontCamera = true;
 
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-            video.srcObject = stream;
+        function startCamera() {
+            const constraints = {
+                video: {
+                    facingMode: useFrontCamera ? 'user' : 'environment'
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+                video.srcObject = stream;
+            }).catch(error => {
+                console.error('Error accessing media devices.', error);
+            });
+        }
+
+        startCamera();
+
+        document.getElementById('switch-camera').addEventListener('click', () => {
+            useFrontCamera = !useFrontCamera;
+            startCamera();
         });
 
         video.addEventListener('loadedmetadata', () => {

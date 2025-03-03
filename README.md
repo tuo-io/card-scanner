@@ -7,6 +7,7 @@ The ID Card Scanner is a web application that allows users to capture an image o
 ## Features
 
 - **Live Video Capture**: Utilizes the user's webcam to capture live video.
+- **Camera Switching**: Allows users to switch between the front and back cameras.
 - **Image Capture**: Allows users to capture an image of the ID card.
 - **OCR Processing**: Uses Tesseract.js to perform OCR on the captured image and extract text.
 - **Base64 Encoding**: Converts the captured image to a Base64 string and displays it.
@@ -16,9 +17,10 @@ The ID Card Scanner is a web application that allows users to capture an image o
 
 1. **Access the Application**: Open the application in a web browser. You can try it out at [ID Card Scanner](https://card-scanner.pages.dev/).
 2. **Allow Webcam Access**: Grant permission for the application to access your webcam.
-3. **Capture Image**: Position the ID card within the green rectangle on the video feed and click the "Capture" button.
-4. **View Results**: The captured image will be displayed, and the recognized text will appear below it.
-5. **Copy Base64 String**: If needed, click the "Copy Base64" button to copy the Base64 string of the image to your clipboard.
+3. **Switch Camera**: Use the "Switch Camera" button to toggle between the front and back cameras.
+4. **Capture Image**: Position the ID card within the green rectangle on the video feed and click the "Capture" button.
+5. **View Results**: The captured image will be displayed, and the recognized text will appear below it.
+6. **Copy Base64 String**: If needed, click the "Copy Base64" button to copy the Base64 string of the image to your clipboard.
 
 ## Technologies Used
 
